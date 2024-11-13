@@ -1,0 +1,65 @@
+#include<iostream>
+#include<vector>
+using namespace std;
+
+// Function to check if assigning a color is safe for a given node
+bool isSafe(vector<vector<int>> &graph, vector<int> &color, int V, int node, int c) {
+    for(int i = 0; i < V; i++) {
+        if(graph[node][i] == 1 && color[i] == c) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Function to solve the graph coloring problem using backtracking
+bool graphColoring(vector<vector<int>> &graph, vector<int> &color, int V, int node, int m) {
+    if(node == V) { // All nodes are colored successfully
+        return true;
+    }
+
+    // Try assigning each color to the node
+    for(int col = 1; col <= m; col++) {
+        if(isSafe(graph, color, V, node, col)) {
+            color[node] = col;  // Assign the color
+
+            if(graphColoring(graph, color, V, node + 1, m)) {  // Recursive call for the next node
+                return true;
+            }
+
+            color[node] = 0;  // Backtrack if no valid coloring is found
+        }
+    }
+    return false;
+}
+
+int main() {
+    int V, m;
+    cout << "Enter the number of vertices: ";
+    cin >> V;
+    
+    m = V - 1;  // Set the number of colors to be used
+
+    vector<vector<int>> graph(V, vector<int>(V, 0));  // Initialize a VxV adjacency matrix with zeros
+
+    cout << "Enter the adjacency matrix (1 if edge is present, 0 if not):\n";
+    for(int i = 0; i < V; i++) {
+        for(int j = 0; j < V; j++) {
+            cout << "Value in matrix for " << i << " and " << j << ": ";
+            cin >> graph[i][j];
+        }
+    }
+
+    vector<int> color(V, 0);  // Color array initialized to 0 (no colors assigned yet)
+    
+    if(graphColoring(graph, color, V, 0, m)) {
+        cout << "\nSolution Exists:\n";
+        for(int i = 0; i < V; i++) {
+            cout << "Vertex " << i + 1 << " -> Color " << color[i] << endl;
+        }
+    } else {
+        cout << "Solution does not exist\n";
+    }
+
+    return 0;
+}

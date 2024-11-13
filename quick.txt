@@ -1,0 +1,77 @@
+#include <iostream>
+using namespace std;
+
+int partition(int array[], int s, int e, int pivotType) {
+    int pivotIndex;
+    
+
+    if (pivotType == 1) {
+        pivotIndex = s;
+    } else if (pivotType == 2) { 
+        pivotIndex = e;
+    } else if (pivotType == 3) { 
+        pivotIndex = s + (e - s) / 2;
+    } else {
+        pivotIndex = s; 
+    }
+
+    swap(array[s], array[pivotIndex]); 
+    int pivot = array[s];
+    int i = s + 1;
+    int j = e;
+
+    while (i <= j) {
+        while (i <= e && array[i] <= pivot) {
+            i++;
+        }
+
+        while (j > s && array[j] > pivot) {
+            j--;
+        }
+
+        if (i < j) {
+            swap(array[i], array[j]);
+        }
+    }
+    swap(array[s], array[j]);
+    return j;
+}
+
+void quicksort(int arr[], int s, int e, int pivotType) {
+    if (s < e) {
+        int p = partition(arr, s, e, pivotType);
+        quicksort(arr, s, p - 1, pivotType);
+        quicksort(arr, p + 1, e, pivotType);
+    }
+}
+
+int main() {
+    int n, pivotType;
+    cout << "Enter the size of array: ";
+    cin >> n;
+    int arr[n];
+
+    cout << "Enter the elements of the array: ";
+    for (int i = 0; i < n; i++) {
+        cin >> arr[i];
+    }
+
+    cout << "Choose pivot strategy (1: Leftmost, 2: Rightmost, 3: Middle): ";
+    cin >> pivotType;
+
+    cout << "The original array is: ";
+    for (int i = 0; i < n; i++) {
+        cout << arr[i] << "\t";
+    }
+    cout << endl;
+
+    quicksort(arr, 0, n - 1, pivotType);
+
+    cout << "The sorted array is: ";
+    for (int i = 0; i < n; i++) {
+        cout << arr[i] << "\t";
+    }
+    cout << endl;
+
+    return 0;
+}

@@ -1,0 +1,98 @@
+#include <iostream>           // Include the input-output stream library for console I/O
+#include <climits>            // Include limits library for using INT_MAX
+using namespace std;          // Use standard namespace to simplify code
+
+#define N 10                  // Define maximum number of cities as 10
+int n;                        // Variable to store the actual number of cities, input by the user
+int adjMatrix[N][N];          // Adjacency matrix to store distances between cities, initialized with max size N
+int minCost = INT_MAX;        // Initialize minimum cost to maximum possible integer, as we aim to minimize this value
+int finalPath[N];             // Array to store the optimal path for the minimum-cost solution
+bool visited[N];              // Boolean array to track which cities have been visited during the search
+
+// Function to copy the current path into the final optimal path array
+void copyToFinal(int currPath[]) {        // Function to store the current best path found in finalPath
+    for (int i = 0; i < n; i++) {         // Loop over each city in the current path
+        finalPath[i] = currPath[i];       // Copy each city from currPath to finalPath
+    }
+}
+
+// Function to calculate a bound (lower bound of cost) for the current path
+int calculateBound(int currCost) {        // Function to calculate a bound for pruning paths in the search
+    int bound = currCost;                 // Initialize bound with the current accumulated cost
+
+    for (int i = 0; i < n; i++) {         // Loop through each city to find the minimal edge cost
+        if (!visited[i]) {                // Only consider cities that haven't been visited
+            int minEdge = INT_MAX;        // Initialize minimum edge cost for city i as infinite
+            
+            for (int j = 0; j < n; j++) { // Loop through each city to find the smallest edge from i to any other city
+                if (!visited[j] && adjMatrix[i][j] && adjMatrix[i][j] < minEdge) { // Check if city j is unvisited, has a direct path, and is the minimum
+                    minEdge = adjMatrix[i][j];    // Update minEdge if a smaller edge is found
+                }
+            }
+            bound += (minEdge == INT_MAX) ? 0 : minEdge; // Add minEdge to bound, handling cases where no valid edge exists
+        }
+    }
+    return bound;                          // Return the calculated bound value
+}
+
+// Recursive function to solve the Traveling Salesman Problem using Branch and Bound
+void tspBranchAndBound(int currPath[], int level, int currCost) {
+    if (level == n) {                      // Base case: if all cities are visited
+        int totalCost = currCost + adjMatrix[currPath[level - 1]][currPath[0]]; // Calculate total cost to return to start city
+        if (totalCost < minCost) {         // Check if this is a new minimum cost
+            minCost = totalCost;           // Update minimum cost
+            copyToFinal(currPath);         // Store the current path as the optimal path found so far
+        }
+        return;                            // End recursion once a complete path is checked
+    }
+
+    for (int i = 0; i < n; i++) {          // Loop through each city to try as the next step in the path
+        if (!visited[i] && adjMatrix[currPath[level - 1]][i]) { // Check if city i is not visited and has a path from previous city
+            visited[i] = true;             // Mark city i as visited
+            currPath[level] = i;           // Add city i to the current path
+
+            int newCost = currCost + adjMatrix[currPath[level - 1]][i]; // Update the accumulated cost
+            if (calculateBound(newCost) < minCost) { // Check if this path is promising (bound < minCost)
+                tspBranchAndBound(currPath, level + 1, newCost); // Recursively call for the next level (next city)
+            }
+
+            visited[i] = false;            // Backtrack: unmark city i as visited for the next iteration
+        }
+    }
+}
+
+int main() {
+    cout << "Enter the number of cities: ";
+    cin >> n;                              // Take user input for the number of cities
+
+    cout << "Enter the adjacency matrix (use 0 for no direct path):\n";
+    for (int i = 0; i < n; i++) {          // Loop through each city
+        for (int j = 0; j < n; j++) {      // Loop through each city again to fill in distances
+            cin >> adjMatrix[i][j];        // Input distance between city i and city j
+        }
+    }
+
+    int startCity;                         
+    cout << "Enter the starting city (1 to " << n << "): ";
+    cin >> startCity;                      // Take user input for the starting city
+    startCity--;                           // Adjust to zero-based indexing for array use
+
+    for (int i = 0; i < n; i++) {          // Manually initialize visited array
+        visited[i] = false;                // Set each city as initially unvisited
+    }
+
+    int currPath[N];                       // Array to store the current path under exploration
+    currPath[0] = startCity;               // Start the path with the start city
+    visited[startCity] = true;             // Mark the starting city as visited
+
+    tspBranchAndBound(currPath, 1, 0);     // Call the TSP branch-and-bound function starting from the initial city
+
+    cout << "The minimum cost is: " << minCost << endl; // Output the minimum cost found
+    cout << "The path is: ";
+    for (int i = 0; i < n; i++) {          // Loop through each city in the final optimal path
+        cout << finalPath[i] + 1 << " ";   // Output each city in 1-based indexing
+    }
+    cout << startCity + 1 << endl;         // Output the start city again to complete the cycle
+
+    return 0;                              // End the program
+}

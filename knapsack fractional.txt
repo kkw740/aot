@@ -1,0 +1,70 @@
+#include<iostream>
+using namespace std;
+
+int main() {
+    int n, M;
+    float SW = 0, SP = 0; // SW: total weight in knapsack, SP: total profit
+    cout << "Enter the number of items: ";
+    cin >> n;
+
+    float value[n], weight[n], item[n], profit[n];
+
+    cout << "Enter the size/capacity of knapsack: ";
+    cin >> M;
+
+    cout << "Enter the value of each item: ";
+    for (int i = 0; i < n; i++) {
+        cin >> value[i];
+    }
+
+    cout << "Enter the weight of each item: ";
+    for (int i = 0; i < n; i++) {
+        cin >> weight[i];
+    }
+
+    cout << "\nStep1: Calculating the value/weight ratio:";
+    for (int i = 0; i < n; i++) {
+        profit[i] = float(value[i] / weight[i]);  // Value-to-weight ratio
+        item[i] = i + 1;
+    }
+
+    cout << "\nItem\tValue\tWeight\tProfit\n";
+    for (int i = 0; i < n; i++) {
+        cout << item[i] << "\t" << value[i] << "\t" << weight[i] << "\t" << profit[i] << endl;
+    }
+
+    cout << "\nStep2: Arranging the item as per decreasing order of profit/weight ratio:";
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (profit[j] < profit[j + 1]) {
+                swap(profit[j], profit[j + 1]);
+                swap(value[j], value[j + 1]);
+                swap(weight[j], weight[j + 1]);
+                swap(item[j], item[j + 1]);
+            }
+        }
+    }
+
+    cout << "\nItem\tValue\tWeight\tProfit\n";
+    for (int i = 0; i < n; i++) {
+        cout << item[i] << "\t" << value[i] << "\t" << weight[i] << "\t" << profit[i] << endl;
+    }
+
+    cout << "\nStep3: Putting the item (or fraction) into the knapsack:";
+    for (int i = 0; i < n; i++) {
+        if (SW + weight[i] <= M) {  // If the item fits, take it all
+            SW += weight[i];
+            SP += value[i];
+            cout << "\nTaking full item " << item[i];
+        } else {  // Otherwise, take the fractional part
+            float remaining_capacity = M - SW;
+            SP += value[i] * (remaining_capacity / weight[i]);  // Fraction of value
+            SW += remaining_capacity;
+            cout << "\nTaking fraction of item " << item[i] << ": " << (remaining_capacity / weight[i]) * 100 << "%";
+            break;
+        }
+    }
+
+    cout << "\n\nThe total profit obtained is " << SP << endl;
+    return 0;
+}

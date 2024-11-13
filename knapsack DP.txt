@@ -1,0 +1,125 @@
+#include<iostream>
+using namespace std;
+
+class knapsack
+{
+    public:
+        // Tabular function to solve the 0/1 Knapsack problem using Dynamic Programming
+        void tabular(int p[], int w[], int n, int m)
+        {
+            // Create a 2D array 'table' to store the maximum profit for each item and capacity
+            int table[51][51] = {0};  // Initialize a 51x51 table with all elements set to 0
+          
+            // Fill the table with values using Dynamic Programming approach
+            for (int i = 1; i <= n; i++)  // Loop through each item
+            {
+                for (int j = 1; j <= m; j++)  // Loop through each knapsack capacity
+                {
+                    // If the weight of the current item is less than or equal to the current capacity
+                    if (w[i-1] <= j)
+                    {
+                        // Max of including or excluding the item
+                        table[i][j] = max(p[i-1] + table[i-1][j-w[i-1]], table[i-1][j]);
+                        // p[i-1] + table[i-1][j-w[i-1]] is the profit if we include the item
+                        // table[i-1][j] is the profit if we don't include the item
+                    }
+                    else
+                    {
+                        // If the item cannot fit in the knapsack, copy the value from the previous row
+                        table[i][j] = table[i-1][j];
+                    }
+                }
+            }
+
+            // Print the table (tabular form of the DP table)
+            cout << "Tabular Form :\n";
+            cout << "----------------------------------------------------------------\n\t|\t";
+            
+            // Print column headers for capacities from 0 to m
+            for (int i = 0; i <= m; i++)
+            {
+                cout << i << "\t|\t";
+            }
+            cout << "\n----------------------------------------------------------------\n";
+
+            // Print the table showing maximum profits for each (i, j)
+            for (int i = 0; i <= n; i++)
+            {
+                cout << i << "\t|\t";  // Print row number (item index)
+                for (int j = 0; j <= m; j++)
+                {
+                    cout << table[i][j] << "\t|\t";  // Print the value in the table
+                }
+                cout << endl;
+            }
+            cout << "-----------------------------------------------------------------\n";
+
+            // After filling the table, call the printselected function to display selected items
+            printselected(p, w, table, n, m);
+        }
+
+        // Function to print the selected items that give the maximum profit
+        void printselected(int p[], int w[], int table[][51], int n, int m)
+        {
+            int selected[50] = {0};  // Array to mark which items are selected
+            int i = n, j = m;
+
+            // Traverse the table from bottom-right to top-left to determine selected items
+            while (i > 0 && j > 0)
+            {
+                // If the current value is different from the value above it, the item was selected
+                if (table[i][j] != table[i-1][j])
+                {
+                    selected[i-1] = 1;  // Mark the item as selected
+                    j = j - w[i-1];  // Reduce the capacity by the weight of the selected item
+                }
+                i--;  // Move to the previous item
+            }
+
+            // Print the selected items (1-based index)
+            cout << "Selected items (index starting from 1): ";
+            int totalprofit = 0;  // Variable to store the total profit of selected items
+            for (i = 0; i < n; i++)
+            {
+                if (selected[i] == 1)  // If the item is selected
+                {
+                    cout << i + 1 << "\t";  // Print the 1-based index of the selected item
+                    totalprofit += p[i];  // Add the profit of the selected item to totalprofit
+                }
+            }
+            cout << "\nTotal Profit: " << totalprofit << endl;  // Print the total profit
+        }
+};
+
+int main()
+{
+    knapsack k;  // Create an object of the knapsack class
+    int p[20], w[20], n, m, i, j;
+
+    // Ask user for the number of items (n) and capacity of the knapsack (m)
+    cout << "Enter the size: ";
+    cin >> n;  // Input number of items
+    cout << "Enter the capacity: ";
+    cin >> m;  // Input capacity of the knapsack
+
+    // Ask user to input the profits for each item
+    cout << "Enter the profit:\n";
+    for (i = 0; i < n; i++)
+    {
+        cout << "p[" << i+1 << "]: ";  // Print prompt for profit of item i+1
+        cin >> p[i];  // Input profit for item i
+    }
+
+    // Ask user to input the weights for each item
+    cout << "Enter the weight:\n";
+    for (i = 0; i < n; i++)
+    {
+        cout << "w[" << i+1 << "]: ";  // Print prompt for weight of item i+1
+        cin >> w[i];  // Input weight for item i
+    }
+
+    // Call the 'tabular' function to solve the 0/1 Knapsack problem
+    k.tabular(p, w, n, m);
+
+    return 0;
+}
